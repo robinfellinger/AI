@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="lab1_workspace/project"/>
+	<classpathentry kind="lib" path="lab1_workspace/.metadata/.plugins/com.google.appengine.eclipse.core/appengine-sdk-proxy.jar"/>
+	<classpathentry kind="output" path="lab1_workspace/project"/>
+</classpath>
