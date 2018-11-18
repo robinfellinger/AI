@@ -49,8 +49,6 @@ class MyAgentState
 	// Based on the last action and the received percept updates the x & y agent position
 	public void updatePosition(DynamicPercept p)
 	{
-		
-		System.out.println("lastAction  " + agent_last_action + "dir  "+ agent_direction);
 		Boolean bump = (Boolean)p.getAttribute("bump");
 
 		if (agent_last_action==ACTION_MOVE_FORWARD && !bump)
@@ -111,6 +109,9 @@ class MyAgentProgram implements AgentProgram {
 	public boolean initialState = true;
 	public int depth = 0;
 	public boolean goingHome = false;
+	public static final int FORWARD = 1;
+	public static final int RIGHT = 2;
+	public static final int LEFT = 3;
 	
 	// moves the Agent to a random start position
 	// uses percepts to update the Agent position - only the position, other percepts are ignored
@@ -159,12 +160,18 @@ class MyAgentProgram implements AgentProgram {
 	}
 	
 	private void uTurnRight() {
-			state.actionsQueue.add(1);
-			state.actionsQueue.add(2);
+			state.actionsQueue.add(FORWARD);
+			state.actionsQueue.add(LEFT);
+			state.actionsQueue.add(FORWARD);
+			state.actionsQueue.add(RIGHT);
+			state.actionsQueue.add(RIGHT);
 	}
 	private void uTurnLeft() {
-		state.actionsQueue.add(1);
-		state.actionsQueue.add(3);
+		state.actionsQueue.add(FORWARD);
+		state.actionsQueue.add(RIGHT);
+		state.actionsQueue.add(FORWARD);
+		state.actionsQueue.add(LEFT);
+		state.actionsQueue.add(LEFT);
 }
 	public Action getAction() {
     	switch(state.actionsQueue.remove()) {
@@ -308,19 +315,19 @@ class MyAgentProgram implements AgentProgram {
 		    	}
 	    }else if(bump && state.agent_direction == MyAgentState.SOUTH) {
 	    	System.out.println("You have hit rock bottom");
-	    	boolean leftCorner = state.actionsQueue.remove() == 3;
+	    	boolean leftCorner = state.actionsQueue.remove() == LEFT;
 	    	
 	    	state.actionsQueue.clear();
-	    	state.actionsQueue.add(2);
-	    	state.actionsQueue.add(2);
+	    	state.actionsQueue.add(RIGHT);
+	    	state.actionsQueue.add(RIGHT);
 	    	
 	    	for(int i = 1; i <= depth-1; i++) {
-	    		state.actionsQueue.add(1);
+	    		state.actionsQueue.add(FORWARD);
 	    	}
 	    	if(leftCorner) {
-	    		state.actionsQueue.add(2);
+	    		state.actionsQueue.add(RIGHT);
 	    	}else {
-	    		state.actionsQueue.add(3);
+	    		state.actionsQueue.add(LEFT);
 	    	}
 	    	
 	    	
