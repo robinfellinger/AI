@@ -320,8 +320,12 @@ class MyAgentProgram implements AgentProgram {
 	    	state.actionsQueue.clear();
 	    	state.actionsQueue.add(RIGHT);
 	    	state.actionsQueue.add(RIGHT);
+	    	int offset = 1;
 	    	
-	    	for(int i = 1; i <= depth-1; i++) {
+	    	if (depth % 2 == 0) {
+	    		offset++;
+	    	}
+	    	for(int i = 1; i <= depth-offset; i++) {
 	    		state.actionsQueue.add(FORWARD);
 	    	}
 	    	if(leftCorner) {
