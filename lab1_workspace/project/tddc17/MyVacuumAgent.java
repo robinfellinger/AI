@@ -30,7 +30,7 @@ class MyAgentState
 	public int agent_y_position = 1;
 	public int agent_last_action = ACTION_NONE;
 	
-	public Queue<Action> actionsQueue = new LinkedList<>();
+	public Queue<Integer> actionsQueue = new LinkedList<>();
 	
 	public static final int NORTH = 0;
 	public static final int EAST = 1;
@@ -49,6 +49,8 @@ class MyAgentState
 	// Based on the last action and the received percept updates the x & y agent position
 	public void updatePosition(DynamicPercept p)
 	{
+		
+		System.out.println("lastAction  " + agent_last_action + "dir  "+ agent_direction);
 		Boolean bump = (Boolean)p.getAttribute("bump");
 
 		if (agent_last_action==ACTION_MOVE_FORWARD && !bump)
@@ -132,38 +134,51 @@ class MyAgentProgram implements AgentProgram {
 		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 	}
 	
-	private Action turnLeft() {
+	public Action turnLeft() {
 	    state.agent_direction = ((state.agent_direction-1) % 4);
 	    if (state.agent_direction<0) 
 	    	state.agent_direction +=4;
 	    state.agent_last_action = state.ACTION_TURN_LEFT;
 		return LIUVacuumEnvironment.ACTION_TURN_LEFT;
 	}
-	private Action turnRight() {
-			state.agent_direction = ((state.agent_direction+1) % 4);
+	public Action turnRight() {
 		    state.agent_last_action = state.ACTION_TURN_RIGHT;
+			state.agent_direction = ((state.agent_direction+1) % 4);
 		    return LIUVacuumEnvironment.ACTION_TURN_RIGHT; 
 	}
 	
-	private Action suck() {
+	public Action suck() {
 		System.out.println("DIRT -> choosing SUCK action!");
     	state.agent_last_action=state.ACTION_SUCK;
     	return LIUVacuumEnvironment.ACTION_SUCK;
 	}
 	
-	private Action moveForward() {
+	public Action moveForward() {
 		state.agent_last_action=state.ACTION_MOVE_FORWARD;
 		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 	}
 	
 	private void uTurnRight() {
-			state.actionsQueue.add(moveForward());
-			state.actionsQueue.add(turnRight());
+			state.actionsQueue.add(1);
+			state.actionsQueue.add(2);
 	}
 	private void uTurnLeft() {
-		state.actionsQueue.add(moveForward());
-		state.actionsQueue.add(turnLeft());
+		state.actionsQueue.add(1);
+		state.actionsQueue.add(3);
 }
+	public Action getAction() {
+    	switch(state.actionsQueue.remove()) {
+    	case 1:
+    		return moveForward();
+    	case 2:
+    		return turnRight();
+    	case 3:
+    		return turnLeft();
+    	default:
+    		return null;
+    	}
+	}
+	
 
 
 	@Override
@@ -187,7 +202,7 @@ class MyAgentProgram implements AgentProgram {
     	System.out.println("x=" + state.agent_x_position);
     	System.out.println("y=" + state.agent_y_position);
     	System.out.println("dir=" + state.agent_direction);
-    	
+    	System.out.println("goingHome=" + goingHome);
 		
 	    iterationCounter--;
 	    
@@ -204,28 +219,28 @@ class MyAgentProgram implements AgentProgram {
 	    // State update based on the percept value and the last action
 	    state.updatePosition((DynamicPercept)percept);
 	   
-//	    if (bump) {
-//			switch (state.agent_direction) {
-//			case MyAgentState.NORTH:
-//				state.updateWorld(state.agent_x_position,state.agent_y_position-1,state.WALL);
-//				break;
-//			case MyAgentState.EAST:
-//				state.updateWorld(state.agent_x_position+1,state.agent_y_position,state.WALL);
-//				break;
-//			case MyAgentState.SOUTH:
-//				state.updateWorld(state.agent_x_position,state.agent_y_position+1,state.WALL);
-//				break;
-//			case MyAgentState.WEST:
-//				state.updateWorld(state.agent_x_position-1,state.agent_y_position,state.WALL);
-//				break;
-//			}
-//	    }
-//	    if (dirt)
-//	    	state.updateWorld(state.agent_x_position,state.agent_y_position,state.DIRT);
-//	    else
-//	    	state.updateWorld(state.agent_x_position,state.agent_y_position,state.CLEAR);
-//	    
-//	    state.printWorldDebug();
+	    if (bump) {
+			switch (state.agent_direction) {
+			case MyAgentState.NORTH:
+				state.updateWorld(state.agent_x_position,state.agent_y_position-1,state.WALL);
+				break;
+			case MyAgentState.EAST:
+				state.updateWorld(state.agent_x_position+1,state.agent_y_position,state.WALL);
+				break;
+			case MyAgentState.SOUTH:
+				state.updateWorld(state.agent_x_position,state.agent_y_position+1,state.WALL);
+				break;
+			case MyAgentState.WEST:
+				state.updateWorld(state.agent_x_position-1,state.agent_y_position,state.WALL);
+				break;
+			}
+	    }
+	    if (dirt)
+	    	state.updateWorld(state.agent_x_position,state.agent_y_position,state.DIRT);
+	    else
+	    	state.updateWorld(state.agent_x_position,state.agent_y_position,state.CLEAR);
+	    
+	    state.printWorldDebug();
 	    
 	    
 	    // Next action selection based on the percept value
@@ -291,30 +306,31 @@ class MyAgentProgram implements AgentProgram {
 		    	{
 		    		return moveForward();
 		    	}
-	    }else if(bump && state.agent_direction != MyAgentState.SOUTH) {
+	    }else if(bump && state.agent_direction == MyAgentState.SOUTH) {
 	    	System.out.println("You have hit rock bottom");
-	    	boolean leftCorner = state.actionsQueue.remove() == turnLeft();
+	    	boolean leftCorner = state.actionsQueue.remove() == 3;
 	    	
 	    	state.actionsQueue.clear();
-	    	state.actionsQueue.add(turnRight());
-	    	state.actionsQueue.add(turnRight());
+	    	state.actionsQueue.add(2);
+	    	state.actionsQueue.add(2);
 	    	
 	    	for(int i = 1; i <= depth-1; i++) {
-	    		state.actionsQueue.add(moveForward());
-	    		System.out.print(i);
+	    		state.actionsQueue.add(1);
 	    	}
 	    	if(leftCorner) {
-	    		state.actionsQueue.add(turnRight());
+	    		state.actionsQueue.add(2);
 	    	}else {
-	    		state.actionsQueue.add(turnLeft());
+	    		state.actionsQueue.add(3);
 	    	}
 	    	
 	    	
 	    	goingHome = true;
 	    	
-	    	return state.actionsQueue.remove();
+	    	
+	    	return getAction();
+
 	    }else {
-	    	return state.actionsQueue.remove();
+	    	return getAction();
 	    }
 		return null;
 	}
