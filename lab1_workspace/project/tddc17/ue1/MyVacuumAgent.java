@@ -1,4 +1,4 @@
-package tddc17;
+package tddc17.ue1;
 
 
 import aima.core.environment.liuvacuum.*;
