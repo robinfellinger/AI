@@ -1,60 +1,58 @@
 package tddc17;
 
+
 import aima.core.environment.liuvacuum.*;
 import aima.core.agent.Action;
 import aima.core.agent.AgentProgram;
 import aima.core.agent.Percept;
 import aima.core.agent.impl.*;
 
-import java.awt.Point;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
 
-class MyAgentState {
+class MyAgentState
+{
 	public int[][] world = new int[30][30];
 	public int initialized = 0;
-	final int UNKNOWN = 0;
-	final int WALL = 1;
-	final int CLEAR = 2;
-	final int DIRT = 3;
-	final int HOME = 4;
-	final int ACTION_NONE = 0;
-	final int ACTION_MOVE_FORWARD = 1;
-	final int ACTION_TURN_RIGHT = 2;
-	final int ACTION_TURN_LEFT = 3;
-	final int ACTION_SUCK = 4;
-
+	final int UNKNOWN 	= 0;
+	final int WALL 		= 1;
+	final int CLEAR 	= 2;
+	final int DIRT		= 3;
+	final int HOME		= 4;
+	final int ACTION_NONE 			= 0;
+	final int ACTION_MOVE_FORWARD 	= 1;
+	final int ACTION_TURN_RIGHT 	= 2;
+	final int ACTION_TURN_LEFT 		= 3;
+	final int ACTION_SUCK	 		= 4;
+	
 	public int agent_x_position = 1;
 	public int agent_y_position = 1;
 	public int agent_last_action = ACTION_NONE;
-
+	
 	public Queue<Integer> actionsQueue = new LinkedList<>();
-	public ArrayList<Point> path = new ArrayList<>();
-
+	
 	public static final int NORTH = 0;
 	public static final int EAST = 1;
 	public static final int SOUTH = 2;
 	public static final int WEST = 3;
 	public int agent_direction = EAST;
-
-	MyAgentState() {
-		for (int i = 0; i < world.length; i++)
-			for (int j = 0; j < world[i].length; j++)
+	
+	MyAgentState()
+	{
+		for (int i=0; i < world.length; i++)
+			for (int j=0; j < world[i].length ; j++)
 				world[i][j] = UNKNOWN;
 		world[1][1] = HOME;
 		agent_last_action = ACTION_NONE;
 	}
+	// Based on the last action and the received percept updates the x & y agent position
+	public void updatePosition(DynamicPercept p)
+	{
+		Boolean bump = (Boolean)p.getAttribute("bump");
 
-	// Based on the last action and the received percept updates the x & y agent
-	// position
-	public void updatePosition(DynamicPercept p) {
-		Boolean bump = (Boolean) p.getAttribute("bump");
-
-		if (agent_last_action == ACTION_MOVE_FORWARD && !bump) {
+		if (agent_last_action==ACTION_MOVE_FORWARD && !bump)
+	    {
 			switch (agent_direction) {
 			case MyAgentState.NORTH:
 				agent_y_position--;
@@ -69,26 +67,30 @@ class MyAgentState {
 				agent_x_position--;
 				break;
 			}
-		}
-
+	    }
+		
 	}
-
-	public void updateWorld(int x_position, int y_position, int info) {
+	
+	public void updateWorld(int x_position, int y_position, int info)
+	{
 		world[x_position][y_position] = info;
 	}
-
-	public void printWorldDebug() {
-		for (int i = 0; i < world.length; i++) {
-			for (int j = 0; j < world[i].length; j++) {
-				if (world[j][i] == UNKNOWN)
+	
+	public void printWorldDebug()
+	{
+		for (int i=0; i < world.length; i++)
+		{
+			for (int j=0; j < world[i].length ; j++)
+			{
+				if (world[j][i]==UNKNOWN)
 					System.out.print(" ? ");
-				if (world[j][i] == WALL)
+				if (world[j][i]==WALL)
 					System.out.print(" # ");
-				if (world[j][i] == CLEAR)
-					System.out.print(" X ");
-				if (world[j][i] == DIRT)
+				if (world[j][i]==CLEAR)
+					System.out.print(" . ");
+				if (world[j][i]==DIRT)
 					System.out.print(" D ");
-				if (world[j][i] == HOME)
+				if (world[j][i]==HOME)
 					System.out.print(" H ");
 			}
 			System.out.println("");
@@ -100,346 +102,254 @@ class MyAgentProgram implements AgentProgram {
 
 	private int initnialRandomActions = 10;
 	private Random random_generator = new Random();
-
+	
 	// Here you can define your variables!
-
+	public int iterationCounter = 2000;
 	public MyAgentState state = new MyAgentState();
-	public int iterationCounter = state.world.length * state.world[0].length * 2;
 	public boolean initialState = true;
+	public int depth = 0;
+	public boolean goingHome = false;
 	public static final int FORWARD = 1;
 	public static final int RIGHT = 2;
 	public static final int LEFT = 3;
-
+	
 	// moves the Agent to a random start position
-	// uses percepts to update the Agent position - only the position, other
-	// percepts are ignored
+	// uses percepts to update the Agent position - only the position, other percepts are ignored
 	// returns a random action
 	private Action moveToRandomStartPosition(DynamicPercept percept) {
 		int action = random_generator.nextInt(6);
 		initnialRandomActions--;
 		state.updatePosition(percept);
-		if (action == 0) {
-			state.agent_direction = ((state.agent_direction - 1) % 4);
-			if (state.agent_direction < 0)
-				state.agent_direction += 4;
-			state.agent_last_action = state.ACTION_TURN_LEFT;
+		if(action==0) {
+		    state.agent_direction = ((state.agent_direction-1) % 4);
+		    if (state.agent_direction<0) 
+		    	state.agent_direction +=4;
+		    state.agent_last_action = state.ACTION_TURN_LEFT;
 			return LIUVacuumEnvironment.ACTION_TURN_LEFT;
-		} else if (action == 1) {
-			state.agent_direction = ((state.agent_direction + 1) % 4);
-			state.agent_last_action = state.ACTION_TURN_RIGHT;
-			return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
-		}
-		state.agent_last_action = state.ACTION_MOVE_FORWARD;
+		} else if (action==1) {
+			state.agent_direction = ((state.agent_direction+1) % 4);
+		    state.agent_last_action = state.ACTION_TURN_RIGHT;
+		    return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
+		} 
+		state.agent_last_action=state.ACTION_MOVE_FORWARD;
 		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 	}
-
+	
 	public Action turnLeft() {
-		state.agent_last_action = state.ACTION_TURN_LEFT;
-		state.agent_direction = ((state.agent_direction - 1) % 4);
-		if (state.agent_direction < 0)
-			state.agent_direction += 4;
+	    state.agent_direction = ((state.agent_direction-1) % 4);
+	    if (state.agent_direction<0) 
+	    	state.agent_direction +=4;
+	    state.agent_last_action = state.ACTION_TURN_LEFT;
 		return LIUVacuumEnvironment.ACTION_TURN_LEFT;
 	}
-
 	public Action turnRight() {
-		state.agent_last_action = state.ACTION_TURN_RIGHT;
-		state.agent_direction = ((state.agent_direction + 1) % 4);
-		return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
+		    state.agent_last_action = state.ACTION_TURN_RIGHT;
+			state.agent_direction = ((state.agent_direction+1) % 4);
+		    return LIUVacuumEnvironment.ACTION_TURN_RIGHT; 
 	}
-
+	
 	public Action suck() {
 		System.out.println("DIRT -> choosing SUCK action!");
-		state.agent_last_action = state.ACTION_SUCK;
-		return LIUVacuumEnvironment.ACTION_SUCK;
+    	state.agent_last_action=state.ACTION_SUCK;
+    	return LIUVacuumEnvironment.ACTION_SUCK;
 	}
-
+	
 	public Action moveForward() {
-		state.agent_last_action = state.ACTION_MOVE_FORWARD;
+		state.agent_last_action=state.ACTION_MOVE_FORWARD;
 		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 	}
-
-	public Action noAction() {
-		state.agent_last_action = state.ACTION_NONE;
-		return NoOpAction.NO_OP;
-	}
-
-	// add the needed actions to the queue depending on the direction the agent is
-	public void goNorth() {
-		switch (state.agent_direction) {
-		case 0:
-			break;
-		case 1:
+	
+	private void uTurnRight() {
+			state.actionsQueue.add(FORWARD);
 			state.actionsQueue.add(LEFT);
-			break;
-		case 2:
-			state.actionsQueue.add(LEFT);
-			state.actionsQueue.add(LEFT);
-			break;
-		case 3:
+			state.actionsQueue.add(FORWARD);
 			state.actionsQueue.add(RIGHT);
-			break;
-		}
+			state.actionsQueue.add(RIGHT);
+	}
+	private void uTurnLeft() {
 		state.actionsQueue.add(FORWARD);
-	}
-
-	public void goEast() {
-		switch (state.agent_direction) {
-		case 0:
-			state.actionsQueue.add(RIGHT);
-			break;
-		case 1:
-			break;
-		case 2:
-			state.actionsQueue.add(LEFT);
-			break;
-		case 3:
-			state.actionsQueue.add(RIGHT);
-			state.actionsQueue.add(RIGHT);
-			break;
-		}
+		state.actionsQueue.add(RIGHT);
 		state.actionsQueue.add(FORWARD);
+		state.actionsQueue.add(LEFT);
+		state.actionsQueue.add(LEFT);
+}
+	public Action getAction() {
+    	switch(state.actionsQueue.remove()) {
+    	case 1:
+    		return moveForward();
+    	case 2:
+    		return turnRight();
+    	case 3:
+    		return turnLeft();
+    	default:
+    		return null;
+    	}
 	}
+	
 
-	public void goSouth() {
-		switch (state.agent_direction) {
-		case 0:
-			state.actionsQueue.add(RIGHT);
-			state.actionsQueue.add(RIGHT);
-			break;
-		case 1:
-			state.actionsQueue.add(RIGHT);
-			break;
-		case 2:
-			break;
-		case 3:
-			state.actionsQueue.add(LEFT);
-			break;
-		}
-		state.actionsQueue.add(FORWARD);
-	}
-
-	public void goWest() {
-		switch (state.agent_direction) {
-		case 0:
-			state.actionsQueue.add(LEFT);
-			break;
-		case 1:
-			state.actionsQueue.add(RIGHT);
-			state.actionsQueue.add(RIGHT);
-			break;
-		case 2:
-			state.actionsQueue.add(RIGHT);
-			break;
-		case 3:
-			break;
-		}
-		state.actionsQueue.add(FORWARD);
-	}
-
-	// private void uTurnRight() {
-	// state.actionsQueue.add(FORWARD);
-	// state.actionsQueue.add(LEFT);
-	// state.actionsQueue.add(FORWARD);
-	// state.actionsQueue.add(RIGHT);
-	// state.actionsQueue.add(RIGHT);
-	// }
-	//
-	// private void uTurnLeft() {
-	// state.actionsQueue.add(FORWARD);
-	// state.actionsQueue.add(RIGHT);
-	// state.actionsQueue.add(FORWARD);
-	// state.actionsQueue.add(LEFT);
-	// state.actionsQueue.add(LEFT);
-	// }
-
-	public Action executeAction() {
-		switch (state.actionsQueue.remove()) {
-		case 1:
-			return moveForward();
-		case 2:
-			return turnRight();
-		case 3:
-			return turnLeft();
-		default:
-			return noAction();
-		}
-	}
-
-	public ArrayList<Point> getPath() {
-		// the frontier is a queue of points not explored yet
-		Queue<Point> frontier = new LinkedList<Point>();
-
-		Point start = new Point(state.agent_x_position, state.agent_y_position);
-		frontier.add(start); // inititialize frontier with start position
-
-		Map<Point, Point> links = new HashMap<Point, Point>();
-		links.put(start, null);
-
-		while (!frontier.isEmpty()) { //checking if the frontier is empty
-			Point currentPoint = frontier.remove(); //remove the current Point from the queue
-
-
-			// if the path to the point is unknown, calculate the path
-			if (state.world[currentPoint.x][currentPoint.y] == state.UNKNOWN) {
-				return calcPath(links, currentPoint);
-			}
-
-			// checking the 4 neighbour points (N,W,S,E)
-			for (int dX = -1; dX <= 1; dX++) {
-				for (int dY = -1; dY <= 1; dY++) {
-					
-					if (Math.abs(dX) != Math.abs(dY)){ //cannot move diagonally
-						
-						Point adjacentPoint = new Point(currentPoint.x + dX, currentPoint.y + dY);
-						
-						//add the Point if it is not already in the links or a wall
-						if (state.world[adjacentPoint.x][adjacentPoint.y] != state.WALL && !links.containsKey(adjacentPoint)){ 
-							links.put(adjacentPoint, currentPoint);
-							frontier.add(adjacentPoint);
-						}
-					}
-				}
-			}
-
-		}
-		return null;
-	}
-
-	//generating the path
-	public ArrayList<Point> calcPath(Map<Point, Point> links, Point goalNode) {
-		ArrayList<Point> path = new ArrayList<Point>();
-		path.add(goalNode);
-		Point currentPoint = goalNode;
-		do {
-			currentPoint = links.get(currentPoint);
-			if(currentPoint != null){
-				path.add(currentPoint);
-			}
-			
-		}while(currentPoint != null);
-		path.remove(path.size() - 1); //remove the start node
-		return path;
-	}
 
 	@Override
 	public Action execute(Percept percept) {
-
+		
 		// DO NOT REMOVE this if condition!!!
-		if (initnialRandomActions > 0) {
-			return moveToRandomStartPosition((DynamicPercept) percept);
-		} else if (initnialRandomActions == 0) {
-			// process percept for the last step of the initial random actions
-			initnialRandomActions--;
-			state.updatePosition((DynamicPercept) percept);
+    	if (initnialRandomActions>0) {
+    		return moveToRandomStartPosition((DynamicPercept) percept);
+    	} else if (initnialRandomActions==0) {
+    		// process percept for the last step of the initial random actions
+    		initnialRandomActions--;
+    		state.updatePosition((DynamicPercept) percept);
 			System.out.println("Processing percepts after the last execution of moveToRandomStartPosition()");
-			state.agent_last_action = state.ACTION_SUCK;
-			return LIUVacuumEnvironment.ACTION_SUCK;
-		}
+			state.agent_last_action=state.ACTION_SUCK;
+	    	return LIUVacuumEnvironment.ACTION_SUCK;
+    	}
+		
+    	// This example agent program will update the internal agent state while only moving forward.
+    	// START HERE - code below should be modified!
+    	    	
+    	System.out.println("x=" + state.agent_x_position);
+    	System.out.println("y=" + state.agent_y_position);
+    	System.out.println("dir=" + state.agent_direction);
+    	System.out.println("goingHome=" + goingHome);
+		
+	    iterationCounter--;
+	    
+	    if (iterationCounter==0)
+	    	return NoOpAction.NO_OP;
 
-		// This example agent program will update the internal agent state while only
-		// moving forward.
-		// START HERE - code below should be modified!
-
-		System.out.println("x=" + state.agent_x_position);
-		System.out.println("y=" + state.agent_y_position);
-		System.out.println("dir=" + state.agent_direction);
-		System.out.println("iterationCounter=" + iterationCounter);
-
-		iterationCounter--;
-
-		if (iterationCounter == 0)
-			return NoOpAction.NO_OP;
-
-		DynamicPercept p = (DynamicPercept) percept;
-		Boolean bump = (Boolean) p.getAttribute("bump");
-		Boolean dirt = (Boolean) p.getAttribute("dirt");
-		// Boolean home = (Boolean) p.getAttribute("home");
-		System.out.println("percept: " + p);
-		System.out.println(initialState);
-
-		// State update based on the percept value and the last action
-		state.updatePosition((DynamicPercept) percept);
-
-		if (bump) {
+	    DynamicPercept p = (DynamicPercept) percept;
+	    Boolean bump = (Boolean)p.getAttribute("bump");
+	    Boolean dirt = (Boolean)p.getAttribute("dirt");
+	    Boolean home = (Boolean)p.getAttribute("home");
+	    System.out.println("percept: " + p);
+	    System.out.println(initialState);
+	    
+	    // State update based on the percept value and the last action
+	    state.updatePosition((DynamicPercept)percept);
+	   
+	    if (bump) {
 			switch (state.agent_direction) {
 			case MyAgentState.NORTH:
-				state.updateWorld(state.agent_x_position, state.agent_y_position - 1, state.WALL);
+				state.updateWorld(state.agent_x_position,state.agent_y_position-1,state.WALL);
 				break;
 			case MyAgentState.EAST:
-				state.updateWorld(state.agent_x_position + 1, state.agent_y_position, state.WALL);
+				state.updateWorld(state.agent_x_position+1,state.agent_y_position,state.WALL);
 				break;
 			case MyAgentState.SOUTH:
-				state.updateWorld(state.agent_x_position, state.agent_y_position + 1, state.WALL);
+				state.updateWorld(state.agent_x_position,state.agent_y_position+1,state.WALL);
 				break;
 			case MyAgentState.WEST:
-				state.updateWorld(state.agent_x_position - 1, state.agent_y_position, state.WALL);
+				state.updateWorld(state.agent_x_position-1,state.agent_y_position,state.WALL);
 				break;
 			}
-		}
-		if (dirt)
-			state.updateWorld(state.agent_x_position, state.agent_y_position, state.DIRT);
-		else
-			state.updateWorld(state.agent_x_position, state.agent_y_position, state.CLEAR);
-
-		state.printWorldDebug();
-
-		// main decision loop
-
-		if (dirt) {
-			return suck();
-		}
-
-		if (state.actionsQueue.isEmpty() && state.path.isEmpty()) {// get new points in the queue
-			state.path = getPath();
-			if (state.path == null) {// if there is no more path to explore
-				System.out.println("Done");
+	    }
+	    if (dirt)
+	    	state.updateWorld(state.agent_x_position,state.agent_y_position,state.DIRT);
+	    else
+	    	state.updateWorld(state.agent_x_position,state.agent_y_position,state.CLEAR);
+	    
+	    state.printWorldDebug();
+	    
+	    
+	    // Next action selection based on the percept value
+	   
+		
+	    if(state.agent_direction == MyAgentState.EAST)
+	    	initialState = false;
+	    
+	    if(state.actionsQueue.isEmpty()){
+		    if (dirt){
+		    	return suck();
+		    } 
+		    else if (home && goingHome) {
 				return NoOpAction.NO_OP;
-			}
+		    }
 
-		}
+		    else if(state.agent_direction != MyAgentState.EAST && initialState){
+					switch (state.agent_direction) {
+						case MyAgentState.NORTH:
+							return turnRight();
+						case MyAgentState.SOUTH:
+							return turnLeft();
+						case MyAgentState.WEST:
+							return turnRight();
+					}
+		    	}
+		    
+		    else if (bump && !goingHome)
+		    	{
+					switch (state.agent_direction) {
+					case MyAgentState.NORTH:
+						return turnRight();
+					case MyAgentState.EAST:
+						uTurnRight();
+						depth++;
+						return turnRight();
+					case MyAgentState.SOUTH:
+						state.actionsQueue.clear();
+						System.out.println("You have hit rock bottom");
+						return turnRight();
+					case MyAgentState.WEST:
+						uTurnLeft();
+						depth++;
+						return turnLeft();
+					}
+		    	}
+			    else if (bump && goingHome)
+		    	{
+					switch (state.agent_direction) {
+					case MyAgentState.NORTH:
+						return turnRight();
+					case MyAgentState.EAST:
+						uTurnLeft();
+						return turnLeft();
+					case MyAgentState.SOUTH:
+						return turnRight();
+					case MyAgentState.WEST:
+						uTurnRight();
+						return turnRight();
+					}
+		    	}
+		    	else
+		    	{
+		    		return moveForward();
+		    	}
+	    }else if(bump && state.agent_direction == MyAgentState.SOUTH) {
+	    	System.out.println("You have hit rock bottom");
+	    	boolean leftCorner = state.actionsQueue.remove() == LEFT;
+	    	
+	    	state.actionsQueue.clear();
+	    	state.actionsQueue.add(RIGHT);
+	    	state.actionsQueue.add(RIGHT);
+	    	int offset = 1;
+	    	
+	    	if (depth % 2 == 0) {
+	    		offset++;
+	    	}
+	    	for(int i = 1; i <= depth-offset; i++) {
+	    		state.actionsQueue.add(FORWARD);
+	    	}
+	    	if(leftCorner) {
+	    		state.actionsQueue.add(RIGHT);
+	    	}else {
+	    		state.actionsQueue.add(LEFT);
+	    	}
+	    	
+	    	
+	    	goingHome = true;
+	    	
+	    	
+	    	return getAction();
 
-		if (state.actionsQueue.isEmpty()) {
-			Point currentPoint = new Point(state.agent_x_position, state.agent_y_position);
-			Point next = state.path.remove(state.path.size() - 1); // remove last point of queue
-
-			// get the direction the next point is
-			int dir = 0;
-			if (currentPoint.x < next.x) {
-				dir = 1;
-			} else if (currentPoint.x > next.x) {
-				dir = 3;
-			} else if (currentPoint.y > next.y) {
-				dir = 0;
-			} else if (currentPoint.y < next.y) {
-				dir = 2;
-			}
-			// add movements to the actionsqueue depending on the direction
-			switch (dir) {
-			case 0:
-				goNorth();
-				break;
-			case 1:
-				goEast();
-				break;
-			case 2:
-				goSouth();
-				break;
-			case 3:
-				goWest();
-				break;
-			}
-		}
-		// pop the next action if the actionsqueue is not empty
-		if (!state.actionsQueue.isEmpty()) {
-			return executeAction();
-		}
-		return noAction();
+	    }else {
+	    	return getAction();
+	    }
+		return null;
 	}
-
+	
 }
 
 public class MyVacuumAgent extends AbstractAgent {
-	public MyVacuumAgent() {
-		super(new MyAgentProgram());
+    public MyVacuumAgent() {
+    	super(new MyAgentProgram());
 	}
 }
