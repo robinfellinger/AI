@@ -1,0 +1,151 @@
+II
+5a)
+What is the risk of melt-down in the power plant during a day if no observations have been made? What if there is icy weather? 
+no observation: P(meltdown)=0.02578
+icy weather: P(meltdown|icy)=0.03472
+
+5b)
+Suppose that both warning sensors indicate failure. What is the risk of a meltdown in that case? Compare this result with the risk of a melt-down when there is an actual pump failure and water leak. What is the difference? The answers must be expressed as conditional probabilities of the observed variables, P(Meltdown|...). 
+both warning sensors indicate failure: P(meltdown|pumpFailureWarning,waterLeakWarning)=0.14535
+actual failure/leak: P(meltdown|pumpFailure,waterLeak)=0.2
+
+The chance of a meltdown with actual failures is of course higher than the chance when only the sensors indicate the failure. 
+The warnings only express, that there is a higher chance of a pump failure/water leak and that raises the chance for the meltdown according to this.
+
+5c)
+The conditional probabilities for the stochastic variables are often estimated by repeated experiments or observations. Why is it sometimes very difficult to get accurate numbers for these? What conditional probabilites in the model of the plant do you think are difficult or impossible to estimate? 
+Because you can not run experiments on some events or you do everything to prevent that event from occuring. 
+
+For exampel you do not want a meltdown to happen and maybe have a little bit of data from meltdowns in history where you can deduce the effects of water leaks and pump failures on meltdowns.
+So you do not let pump failures and water leaks happen to calculate the probability of a meltdown,
+but try to fix it as fast as possible to prevent the meltdown. 
+But in that way you of course can not get exaxt values.
+
+5d)
+Assume that the "IcyWeather" variable is changed to a more accurate "Temperature" variable instead (don't change your model). What are the different alternatives for the domain of this variable? What will happen with the probability distribution of P(WaterLeak | Temperature) in each alternative? 
+
+You could add different categories of temperature, e.g. icy with a big impact on water leaks, cold with a small impact, a warm with a lower/no probability of causing a water leak.
+Then the probabilty distribution table of water leak would be bigger of course (2x2 -> 2x3).
+Another possibilty would be to add an continous domain. For a continous  variable we wouldnt have
+a distribution table, instead a continuous function.
+
+6)
+a) What does a probability table in a Bayesian network represent? 
+It represents the conditional probabilities for each case for the given node regarding the values of values of the parent nodes. 
+
+b)
+What is a joint probability distribution? 
+Using the chain rule on the structure of the Bayesian network to rewrite the joint distribution as a product of P(child|parent) expressions, calculate manually the particular entry in the joint distribution of P(Meltdown=F, PumpFailureWarning=F, PumpFailure=F, WaterLeakWaring=F, WaterLeak=F, IcyWeather=F). Is this a common state for the nuclear plant to be in? 
+
+A joint probabilty distribution is a distribution table of all possible combinations of all assignments to all random variables and their probabilities.
+
+Query P(e)= 0.69378
+
+P(Meltdown=F, PumpFailureWarning=F, PumpFailure=F, WaterLeakWaring=F, WaterLeak=F, IcyWeather=F) 
+= P(Meltdown=F|PumpFailureWarning=F, PumpFailure=F, WaterLeakWaring=F, WaterLeak=F, IcyWeather=F) 
+* P(PumpFailureWarning=F|PumpFailure=F, WaterLeakWaring=F, WaterLeak=F, IcyWeather=F) 
+* P(PumpFailure=F|WaterLeakWaring=F, WaterLeak=F, IcyWeather=F) 
+* P(WaterLeakWaring=F|WaterLeak=F, IcyWeather=F) 
+* P(WaterLeak=F|IcyWeather=F) 
+* P(IcyWeather=F)
+
+
+P(Meltdown=F, PumpFailureWarning=F, PumpFailure=F, WaterLeakWaring=F, WaterLeak=F, IcyWeather=F)
+= P(Meltdown=F|PumpFailure=F, WaterLeak=F) 
+* P(PumpFailureWarning=F|PumpFailure=F) 
+* P(WaterLeakWarning=F|WaterLeak=F) 
+* P(WaterLeak=F|IcyWeather=F) 
+* P(PumpFailure=F) 
+* P(IcyWeather=F) 
+= 0.95 * 0.9 * 0.9 * 0.95 * 0.95 * 0.999 = 0.69377 ~ 0.69378 (from Query)
+
+This should be the common state in a nuclear power plant, no failures and no warnings. 
+And a probabilty of ~69% shows, that it luckily is a common state in this case.
+
+c)
+What is the probability of a meltdown if you know that there is both a water leak and a pump failure? Would knowing the state of any other variable matter? Explain your reasoning! 
+
+P(Meltdown=T|PumpFailure=T, WaterLeak=T)=0.2
+
+No, we do not need to know the state of other variables. PumpFailure and WaterLeak are the only one directly influencing Meltdown and because in this case their probality is already set to 100% = T, so their values can not be influenced by their parents/child nodes.
+ 
+d)
+Calculate manually the probability of a meltdown when you happen to know that PumpFailureWarning=F, WaterLeak=F, WaterLeakWarning=F and IcyWeather=F but you are not really sure about a pump failure. 
+
+P(Meltdown|PumpFailureWarning=F, WaterLeak=F, WaterLeakWarning=F, IcyWeather=F)
+
+a := alpha
+
+a * P(Meltdown|PumpFailureWarning=F, WaterLeak=F, WaterLeakWarning=F, IcyWeather=F) 
+= a * sum-e(P(Meltdown, PumpFailureWarning=F, WaterLeak = F, WaterLeakWarning = F, IcyWeather = F, PumpFailure = e)) 
+= a * sum-e( P(Meltdown | PumpFailure = e, WaterLeak = F) 
+* P(PumpFailureWarning = F | PumpFailure = e) 
+* P(PumpFailure = e) * P(WaterLeakWarning = F | WaterLeak = F) 
+* P(WaterLeak = F | IcyWeather = F) 
+* P(IcyWeather = F))
+= a * (0.15 * 0.01 + 0.001 * 0.99, 0.999 * 0.9 + 0.85 * 0.1) 
+= a * (0.0025, 0.9841) 
+(a = 1.0136 (normalize))
+= (1.0136 * 0.0025, 1.0136 * 0.9841) 
+= (0.0025, 0.9975)
+
+
+III
+2)
+During the lunch break, the owner tries to show off for his employees by demonstrating the many features of his car stereo. To everyone's disappointment, it doesn't work. How did the owner's chances of surviving the day change after this observation? 
+
+normal survice chance: P(survive)= 0.99283
+car stereo: P(survive|¬radio)= 0.99213
+Because the radio is not working, there is a higher chance that the battery is not working, 
+following in decresing probabilities for ignition -> starts -> moves -> survives. 
+So his chances of surviving decreased.
+
+How does the bicycle change the owner's chances of survival? 
+
+thoughts:
+it will raise his chances of survial a lot:
+1. it raises the chance of survival in the case his car moves (0.8 -> 0.9)
+2. it opened the chance of survival in the case the car does not move (0.0 -> 0.6)
+so in general his chance of survival will be a lot better.
+implemented:
+P(survival=T) = 0.99628
+P(survival=T|Meltdown = T) = 0.85589
+Even with a Meltdown his chances are way better (without bike P(survival=T|Meltdown = T)= 0.72204)
+
+
+It is possible to model any function in propositional logic with Bayesian Networks. What does this fact say about the complexity of exact inference in Bayesian Networks? What alternatives are there to exact inference? 
+
+Any propositional logic can me modelled by using Bayesian Networks. Therefore the complexity can be exponetial, because there are no limits to the number of variables. 
+E.g. n random variables, possible combination f them: 2^n. In the worst cause all of them have to be evaluated.
+
+Alternatives: Bounded Variance algorith, MCMC
+
+
+IV
+2)
+The owner had an idea that instead of employing a safety person, to replace the pump with a better one. Is it possible, in your model, to compensate for the lack of Mr H.S.'s expertise with a better pump? f
+
+We introduced four new nodes, representing MR HS behaviour. The probability of a meltdown is now higher than before:
+He is placed underneath both warning systems.
+P(Meltdown = T) = 0.02578 (normal)
+P(Meltdown = T) = 0.02732 (with MR HS)
+
+P(Meltdown = T) = 0.02093 (P(PumpFailure = T)=0.05)
+P(Meltdown = T) = 0.02413 (P(PumpFailure = T) =0.075)
+P(Meltdown = T) = 0.02540 (P(PumpFailure = T) =0.085)
+P(Meltdown = T) = 0.02604 (P(PumpFailure = T) =0.09)
+
+We invest in a pump with a smaller failrate (between 0.85 and 0.9) we can compensate the negative influence from MR HS. 
+
+Mr H.S. fell asleep on one of the plant's couches. When he wakes up he hears someone scream: "There is one or more warning signals beeping in your control room!". Mr H.S. realizes that he does not have time to fix the error before it is to late (we can assume that he wasn't in the control room at all). What is the chance of survival for Mr H.S. if he has a car with the same properties as the owner? Hint: This question involves a disjunction (A or B) which can not be answered by querying the network as is. How could you answer such questions? Maybe something could be added or modified in the network.
+
+We created a disjuction of PumpFailureWarning and WaterLeakWarning, T=1.0 when PumpFailureWarning, WaterLeakWarning or both are TRUE. With OnOreMoreWarning = T, we get a probabilty of a meltdown of 0.08929 and a probabilty of survival = 0.96534.
+
+What unrealistic assumptions do you make when creating a Bayesian Network model of a person? 
+
+Human beeings do not have specific probabilites of doing this or that. They are controlled by their emotions and thoughts all the time. In our example MR HS is limited to 4 "actions" with specific probabilities. That totally ignores the free will of human beeings.
+
+
+Describe how you would model a more dynamic world where for example the "IcyWeather" is more likely to be true the next day if it was true the day before. You only have to consider a limited sequence of days. 
+Dynamic Bayesian Networks
+The probabilty of IcyWeather in time = t is combined out of a basic value and a dynamic value, depending on the value of t-1. If t-1 : IcyWeather = T, then the basic value would be increased with a specific value. 

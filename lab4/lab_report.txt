@@ -1,0 +1,60 @@
+lab report, screenshots in the appendix
+I.) (abbreviations for the different heuristics: FF and GC)
+2)
+How do the graphs differ, given the same problem and search method but different heuristics? Include screenshots in your report and discuss what you see! 
+
+The graphs differ tremendous. The FF one shows a path of every node visited, while the GC one is more spread and looks like a root. 
+The FF one continues from every visited node, but the GC one is switched the path several times. 
+Also obvious is the difference in color of the node (goal count as standard color setting) = the values of the heuristics: 
+the FF has variating values, but GC has always the value 8 (for the first 40 steps)
+
+3)
+Do the different configurations use different actions?
+FF only uses "drive" to reach it's 40 first node, while GC also uses "load". It depends on the heuristic, whether a action is "usefull" in the beginning or not.
+
+4)
+At the beginning, the FF visualisation expanded nodes along a long path before it started expanding at other places. 
+Are the nodes in this path used in the final plan?
+
+the first 12 nodes of the long path after 40 steps are contained in the final plan. 
+The graph did not extend much or entirely on it's starting/"early" nodes, then its obvious, that is uses partly the nodes from the said path.
+
+II.) (abbreviations for the different heuristics/searches: FF and GC/FF)
+x=256 for GC/FF
+
+2)
+When the planner adds a new action to a branch in the search tree, this doesn't necessarily cause the heuristic function to decrease. 
+In which time step does the planner first find a new lower value for the main heuristic function in each example (FF and GC, respectively)? 
+FF: step 1
+GC/FF: step 19
+for comparison: FF is step 19 already almost finished and pretty near to the final plan
+
+3)
+Step 27, both heuristics
+How many goal facts are left to achieve according to the goal count heuristic (see the description of Eager greedy search, 
+Goal count heuristic) in the state that has progressed the longest? 
+FF: h_ff: 0  real_g: 22
+GC/FF: h_ff: 16  h_goal_count: 6  real_g: 5
+
+4)
+Follow the marked path from the start node (the initial state) to the last node (the first found goal state) in the highlighted path in the graph (the plan). 
+Does the solution ever increase the value of the goal count heuristic between one state and the next? 
+It increases over time up to 7 (after 1575 steps). It already had a goal count of 6 in step 27.
+
+III.
+Is the graph similar to any of those that you have examined above? Can you explain why or why not? 
+domain: shakey, problem: turn on all lights, with GC/FF
+Our graph is much smaller and every visited node is in the final plan.
+Because our domain and our problem is much simpler. The nomystery is "proved hard for many planners in the competition" and our own domain is a very simple one. 
+In that way it is similar to p02 with FF at the beginning (< step 40), but through its simplicity there is no chance of further extending.
+
+Was any configuration better than the other? Was it better on everything or just on some problems?
+Are your findings applicable to all the infinite many possible domains and problems? If so why? Else, why not?
+
+FF was the worst for p03, but way better for p02 (1297 to 27 steps). There werent any huge differences for our shakey domain (due to its simplicity). 
+GC was somewhere in the middle for p03, but the far worst for p02 (12222 steps). 
+There is not best configuration for every problem, so it depends on the problem, whether a heuristic is efficient or not. 
+A heuristic can be "lucky" to find a right path early (e.g. FF on p02). . In conclusion a good heuristic can change very much, so you have to adapt your heuristic to the problem.
+
+
+
